@@ -1,0 +1,3302 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nine Point Game</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Orbitron', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100vh;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Home Screen */
+    .home-container {
+      text-align: center;
+      color: white;
+      max-width: 600px;
+      padding: 40px;
+    }
+
+    .game-title {
+      font-size: 4rem;
+      font-weight: 900;
+      margin-bottom: 20px;
+      background: linear-gradient(45deg, #fff, #f0f8ff, #e6e6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.2); }
+    }
+
+    .game-subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .game-description {
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 50px;
+      opacity: 0.8;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      padding: 15px 40px;
+      border-radius: 50px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #555, #777);
+      margin-left: 20px;
+    }
+
+    .btn-secondary:hover {
+      background: linear-gradient(45deg, #666, #888);
+    }
+
+    /* Game Screen */
+    .game-screen {
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .game-header {
+      text-align: center;
+      color: white;
+    }
+
+    .game-board-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #game-container {
+      position: relative;
+      width: 350px;
+      height: 350px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .vertex {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .vertex:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .vertex.player-a {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .vertex.player-b {
+      background: linear-gradient(135deg, #4dabf7, #339af0);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(77, 171, 247, 0.4);
+    }
+
+    .vertex.selected {
+      border: 3px solid #ffd43b !important;
+      box-shadow: 0 0 25px rgba(255, 212, 59, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1.1); }
+      50% { transform: scale(1.2); }
+    }
+
+    .line {
+      position: absolute;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+      transform-origin: 0 0;
+      z-index: 1;
+    }
+
+    .game-status {
+      text-align: center;
+      color: white;
+      margin-top: 20px;
+    }
+
+    #status {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .game-controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .win-animation {
+      animation: winGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes winGlow {
+      from {
+        box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+        transform: scale(1.15);
+      }
+      to {
+        box-shadow: 0 0 25px #ffd700, 0 0 50px #ffd700;
+        transform: scale(1.25);
+      }
+    }
+
+    .phase-indicator {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-left: 10px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .phase-place {
+      background: linear-gradient(45deg, #51cf66, #37b24d);
+      color: white;
+    }
+
+    .phase-move {
+      background: linear-gradient(45deg, #ff8787, #ff6b6b);
+      color: white;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .game-title {
+        font-size: 2.5rem;
+      }
+      
+      #game-container {
+        width: 300px;
+        height: 300px;
+      }
+      
+      .vertex {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
+      
+      .btn {
+        padding: 12px 30px;
+        font-size: 1rem;
+      }
+      
+      .btn-secondary {
+        margin-left: 0;
+        margin-top: 15px;
+      }
+    }
+
+    /* Particle effects */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float 6s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  <div class="screen active" id="home-screen">
+    <div class="home-container">
+      <h1 class="game-title">NINE POINT</h1>
+      <p class="game-subtitle">Strategic Board Game</p>
+      <p class="game-description">
+        A classic strategy game where two players compete to align three pieces in a row. 
+        Place your pieces strategically, then move them wisely to achieve victory!
+      </p>
+      <button class="btn" onclick="startGame()">START GAME</button>
+    </div>
+  </div>
+
+  <div class="screen" id="game-screen">
+    <div class="game-header">
+      <h2 style="font-size: 2rem; margin-bottom: 10px;">NINE POINT GAME</h2>
+    </div>
+    
+    <div class="game-board-container">
+      <div id="game-container"></div>
+    </div>
+    
+    <div class="game-status">
+      <div id="status">Player A's turn</div>
+      <div class="game-controls">
+        <button class="btn" id="restart" onclick="restartGame()">RESTART</button>
+        <button class="btn btn-secondary" onclick="goHome()">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Navigation functions
+    function startGame() {
+      document.getElementById('home-screen').classList.remove('active');
+      document.getElementById('game-screen').classList.add('active');
+      initializeGame();
+    }
+
+    function goHome() {
+      document.getElementById('game-screen').classList.remove('active');
+      document.getElementById('home-screen').classList.add('active');
+      resetGameState();
+    }
+
+    // Game state
+    let gameState = {
+      board: Array(9).fill(null),
+      currentPlayer: 'A',
+      phase: 'place',
+      tokensPlaced: { A: 0, B: 0 },
+      gameOver: false
+    };
+
+    // Vertex positions (adjusted for larger board)
+    const positions = [
+      { x: 60, y: 60 },   // P1
+      { x: 175, y: 60 },  // P2
+      { x: 290, y: 60 },  // P3
+      { x: 60, y: 175 },  // P4
+      { x: 175, y: 175 }, // P5
+      { x: 290, y: 175 }, // P6
+      { x: 60, y: 290 },  // P7
+      { x: 175, y: 290 }, // P8
+      { x: 290, y: 290 }  // P9
+    ];
+
+    // Adjacency list for valid moves
+    const adjacencies = [
+      [1, 3, 4],        // P1: P2, P4, P5
+      [0, 2, 4],        // P2: P1, P3, P5
+      [1, 4, 5],        // P3: P2, P5, P6
+      [0, 4, 6],        // P4: P1, P5, P7
+      [0, 1, 2, 3, 5, 6, 7, 8], // P5: All except itself
+      [2, 4, 8],        // P6: P3, P5, P9
+      [3, 4, 7],        // P7: P4, P5, P8
+      [4, 6, 8],        // P8: P5, P7, P9
+      [4, 5, 7]         // P9: P5, P6, P8
+    ];
+
+    // Win conditions
+    const winLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
+      [0, 4, 8], [2, 4, 6]             // Diagonal
+    ];
+
+    let selectedVertex = null;
+    const container = document.getElementById('game-container');
+    const status = document.getElementById('status');
+
+    function initializeGame() {
+      container.innerHTML = '';
+      createBoard();
+      updateStatus();
+    }
+
+    function createBoard() {
+      // Draw lines
+      const lines = [
+        { from: 0, to: 1 }, { from: 1, to: 2 }, // Horizontal top
+        { from: 3, to: 4 }, { from: 4, to: 5 }, // Horizontal middle
+        { from: 6, to: 7 }, { from: 7, to: 8 }, // Horizontal bottom
+        { from: 0, to: 3 }, { from: 3, to: 6 }, // Vertical left
+        { from: 1, to: 4 }, { from: 4, to: 7 }, // Vertical middle
+        { from: 2, to: 5 }, { from: 5, to: 8 }, // Vertical right
+        { from: 0, to: 4 }, { from: 4, to: 8 }, // Diagonal \
+        { from: 2, to: 4 }, { from: 4, to: 6 }  // Diagonal /
+      ];
+
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line';
+        const from = positions[line.from];
+        const to = positions[line.to];
+        const length = Math.hypot(to.x - from.x, to.y - from.y);
+        const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
+        div.style.width = `${length}px`;
+        div.style.height = '3px';
+        div.style.left = `${from.x}px`;
+        div.style.top = `${from.y}px`;
+        div.style.transform = `rotate(${angle}deg)`;
+        container.appendChild(div);
+      });
+
+      // Create vertices
+      positions.forEach((pos, index) => {
+        const vertex = document.createElement('div');
+        vertex.className = 'vertex';
+        vertex.style.left = `${pos.x - 20}px`;
+        vertex.style.top = `${pos.y - 20}px`;
+        vertex.dataset.index = index;
+        vertex.addEventListener('click', () => handleClick(index));
+        container.appendChild(vertex);
+      });
+    }
+
+    function handleClick(index) {
+      if (gameState.gameOver) return;
+
+      if (gameState.phase === 'place') {
+        // Place phase
+        if (!gameState.board[index]) {
+          gameState.board[index] = gameState.currentPlayer;
+          gameState.tokensPlaced[gameState.currentPlayer]++;
+          updateBoard();
+          
+          if (checkWin()) {
+            endGame(`Player ${gameState.currentPlayer} Wins!`);
+            return;
+          }
+          
+          if (gameState.tokensPlaced.A === 3 && gameState.tokensPlaced.B === 3) {
+            gameState.phase = 'move';
+          } else {
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      } else {
+        // Move phase
+        if (selectedVertex === null) {
+          if (gameState.board[index] === gameState.currentPlayer) {
+            selectedVertex = index;
+            highlightVertex(index, true);
+          }
+        } else {
+          if (index === selectedVertex) {
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+          } else if (!gameState.board[index] && adjacencies[selectedVertex].includes(index)) {
+            gameState.board[index] = gameState.currentPlayer;
+            gameState.board[selectedVertex] = null;
+            updateBoard();
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+            
+            if (checkWin()) {
+              endGame(`Player ${gameState.currentPlayer} Wins!`);
+              return;
+            }
+            
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      }
+    }
+
+    function highlightVertex(index, highlight) {
+      const vertices = container.querySelectorAll('.vertex');
+      const vertex = vertices[index];
+      if (highlight) {
+        vertex.classList.add('selected');
+      } else {
+        vertex.classList.remove('selected');
+      }
+    }
+
+    function updateBoard() {
+      const vertices = container.querySelectorAll('.vertex');
+      gameState.board.forEach((player, index) => {
+        const vertex = vertices[index];
+        vertex.textContent = player || '';
+        vertex.className = 'vertex';
+        if (player === 'A') {
+          vertex.classList.add('player-a');
+        } else if (player === 'B') {
+          vertex.classList.add('player-b');
+        }
+      });
+    }
+
+    function updateStatus() {
+      const phase = gameState.phase === 'place' ? 'PLACE' : 'MOVE';
+      const phaseClass = gameState.phase === 'place' ? 'phase-place' : 'phase-move';
+      status.innerHTML = `Player ${gameState.currentPlayer}'s turn <span class="phase-indicator ${phaseClass}">${phase} PHASE</span>`;
+    }
+
+    function checkWin() {
+      for (const line of winLines) {
+        if (gameState.board[line[0]] &&
+            gameState.board[line[0]] === gameState.board[line[1]] &&
+            gameState.board[line[1]] === gameState.board[line[2]]) {
+          
+          // Highlight winning line
+          const vertices = container.querySelectorAll('.vertex');
+          line.forEach(index => {
+            vertices[index].classList.add('win-animation');
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function endGame(message) {
+      gameState.gameOver = true;
+      status.innerHTML = `<span style="color: #ffd43b; font-size: 1.5rem;">${message}</span>`;
+    }
+
+    function restartGame() {
+      resetGameState();
+      initializeGame();
+    }
+
+    function resetGameState() {
+      gameState = {
+        board: Array(9).fill(null),
+        currentPlayer: 'A',
+        phase: 'place',
+        tokensPlaced: { A: 0, B: 0 },
+        gameOver: false
+      };
+      selectedVertex = null;
+    }
+
+    // Initialize particles on load
+    createParticles();
+  </script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nine Point Game</title>
+  <meta name="theme-color" content="#667eea">
+  <meta name="theme-color" content="#22223b" media="(prefers-color-scheme: dark)">
+  <meta name="msapplication-TileColor" content="#667eea">
+  <meta name="description" content="Strategic Nine Point Board Game - PWA Ready">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: 'Orbitron', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      height: 100%;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.8s ease-out;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Home Screen */
+    .home-container {
+      text-align: center;
+      color: white;
+      max-width: 90vw;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+    }
+
+    .game-title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 900;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #fff, #f0f8ff, #e6e6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      line-height: 1.1;
+    }
+
+    @keyframes titleGlow {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.2); }
+    }
+
+    .game-subtitle {
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      margin-bottom: 30px;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .game-description {
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      line-height: 1.6;
+      margin-bottom: 40px;
+      opacity: 0.8;
+      max-width: 100%;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      padding: clamp(12px, 4vw, 15px) clamp(30px, 8vw, 40px);
+      border-radius: 50px;
+      color: white;
+      font-size: clamp(1rem, 4vw, 1.1rem);
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 48px; /* Touch target size */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      touch-action: manipulation;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before,
+    .btn:active::before {
+      left: 100%;
+    }
+
+    .btn:hover,
+    .btn:active {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #555, #777);
+    }
+
+    .btn-secondary:hover,
+    .btn-secondary:active {
+      background: linear-gradient(45deg, #666, #888);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Game Screen */
+    .game-screen {
+      flex-direction: column;
+      gap: clamp(15px, 4vw, 30px);
+      max-width: 100vw;
+    }
+
+    .game-header {
+      text-align: center;
+      color: white;
+      padding: 0 10px;
+    }
+
+    .game-header h2 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 10px;
+    }
+
+    .game-board-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: clamp(15px, 4vw, 30px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 350px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .vertex {
+      position: absolute;
+      width: clamp(35px, 10vw, 50px);
+      height: clamp(35px, 10vw, 50px);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
+      transform: translate(-50%, -50%);
+    }
+
+    .vertex:hover,
+    .vertex:active {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .vertex.player-a {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .vertex.player-b {
+      background: linear-gradient(135deg, #4dabf7, #339af0);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(77, 171, 247, 0.4);
+    }
+
+    .vertex.selected {
+      border: 3px solid #ffd43b !important;
+      box-shadow: 0 0 25px rgba(255, 212, 59, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .line {
+      position: absolute;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+      transform-origin: 0 0;
+      z-index: 1;
+      height: clamp(2px, 0.5vw, 3px);
+    }
+
+    .game-status {
+      text-align: center;
+      color: white;
+      margin-top: 20px;
+      padding: 0 10px;
+      width: 100%;
+    }
+
+    #status {
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1.3;
+    }
+
+    .game-controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
+    .win-animation {
+      animation: winGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes winGlow {
+      from {
+        box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+      to {
+        box-shadow: 0 0 25px #ffd700, 0 0 50px #ffd700;
+        transform: translate(-50%, -50%) scale(1.25);
+      }
+    }
+
+    .phase-indicator {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
+      font-weight: 600;
+      margin: 5px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .phase-place {
+      background: linear-gradient(45deg, #51cf66, #37b24d);
+      color: white;
+    }
+
+    .phase-move {
+      background: linear-gradient(45deg, #ff8787, #ff6b6b);
+      color: white;
+    }
+
+    /* Particle effects */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: clamp(3px, 1vw, 4px);
+      height: clamp(3px, 1vw, 4px);
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float 6s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Mobile specific adjustments */
+    @media (max-width: 480px) {
+      .home-container {
+        padding: 15px;
+      }
+      
+      .game-board-container {
+        margin: 0 10px;
+        padding: 15px;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .btn {
+        width: 100%;
+        max-width: 280px;
+      }
+      
+      .phase-indicator {
+        display: block;
+        margin-top: 10px;
+      }
+    }
+
+    /* Landscape mobile adjustments */
+    @media (max-height: 600px) and (orientation: landscape) {
+      .screen {
+        padding: 10px;
+      }
+      
+      .game-screen {
+        gap: 15px;
+      }
+      
+      .game-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+      }
+      
+      .game-board-container {
+        padding: 15px;
+      }
+      
+      #status {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+      }
+    }
+
+    /* Extra small devices */
+    @media (max-width: 320px) {
+      .game-title {
+        font-size: 2rem;
+      }
+      
+      .vertex {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+      }
+      
+      .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* High DPI displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .vertex {
+        border-width: 1px;
+      }
+      
+      .line {
+        height: 2px;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body::before {
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.4) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.3) 0%, transparent 50%);
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .vertex {
+        transition: none;
+      }
+      
+      .btn {
+        transition: none;
+      }
+      
+      .pulse,
+      .titleGlow,
+      .winGlow,
+      .float {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+
+  
+  <div class="screen active" id="home-screen">
+    <div class="home-container">
+      <h1 class="game-title">NINE POINT</h1>
+      <p class="game-subtitle">Strategic Board Game</p>
+      <p class="game-description">
+        A classic strategy game where two players compete to align three pieces in a row. 
+        Place your pieces strategically, then move them wisely to achieve victory!
+      </p>
+      <div class="btn-group">
+        <button class="btn" onclick="startGame()">START GAME</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="game-screen">
+    <div class="game-header">
+      <h2>NINE POINT GAME</h2>
+    </div>
+    
+    <div class="game-board-container">
+      <div id="game-container"></div>
+    </div>
+    
+    <div class="game-status">
+      <div id="status">Player A's turn</div>
+      <div class="game-controls">
+        <button class="btn" id="restart" onclick="restartGame()">RESTART</button>
+        <button class="btn btn-secondary" onclick="goHome()">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create floating particles with responsive count
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 10 : 15; // Fewer particles on mobile
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Navigation functions
+    function startGame() {
+      document.getElementById('home-screen').classList.remove('active');
+      document.getElementById('game-screen').classList.add('active');
+      initializeGame();
+    }
+
+    function goHome() {
+      document.getElementById('game-screen').classList.remove('active');
+      document.getElementById('home-screen').classList.add('active');
+      resetGameState();
+    }
+
+    // Game state
+    let gameState = {
+      board: Array(9).fill(null),
+      currentPlayer: 'A',
+      phase: 'place',
+      tokensPlaced: { A: 0, B: 0 },
+      gameOver: false
+    };
+
+    // Responsive vertex positions (percentage-based)
+    function getPositions() {
+      const container = document.getElementById('game-container');
+      const rect = container.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height);
+      const margin = size * 0.15; // 15% margin
+      const step = (size - 2 * margin) / 2;
+      
+      return [
+        { x: margin, y: margin },                    // P1
+        { x: margin + step, y: margin },             // P2
+        { x: margin + 2 * step, y: margin },        // P3
+        { x: margin, y: margin + step },             // P4
+        { x: margin + step, y: margin + step },      // P5
+        { x: margin + 2 * step, y: margin + step }, // P6
+        { x: margin, y: margin + 2 * step },        // P7
+        { x: margin + step, y: margin + 2 * step }, // P8
+        { x: margin + 2 * step, y: margin + 2 * step } // P9
+      ];
+    }
+
+    // Adjacency list for valid moves
+    const adjacencies = [
+      [1, 3, 4],        // P1: P2, P4, P5
+      [0, 2, 4],        // P2: P1, P3, P5
+      [1, 4, 5],        // P3: P2, P5, P6
+      [0, 4, 6],        // P4: P1, P5, P7
+      [0, 1, 2, 3, 5, 6, 7, 8], // P5: All except itself
+      [2, 4, 8],        // P6: P3, P5, P9
+      [3, 4, 7],        // P7: P4, P5, P8
+      [4, 6, 8],        // P8: P5, P7, P9
+      [4, 5, 7]         // P9: P5, P6, P8
+    ];
+
+    // Win conditions
+    const winLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
+      [0, 4, 8], [2, 4, 6]             // Diagonal
+    ];
+
+    let selectedVertex = null;
+    const container = document.getElementById('game-container');
+    const status = document.getElementById('status');
+
+    function initializeGame() {
+      container.innerHTML = '';
+      createBoard();
+      updateStatus();
+    }
+
+    function createBoard() {
+      const positions = getPositions();
+      
+      // Draw lines
+      const lines = [
+        { from: 0, to: 1 }, { from: 1, to: 2 }, // Horizontal top
+        { from: 3, to: 4 }, { from: 4, to: 5 }, // Horizontal middle
+        { from: 6, to: 7 }, { from: 7, to: 8 }, // Horizontal bottom
+        { from: 0, to: 3 }, { from: 3, to: 6 }, // Vertical left
+        { from: 1, to: 4 }, { from: 4, to: 7 }, // Vertical middle
+        { from: 2, to: 5 }, { from: 5, to: 8 }, // Vertical right
+        { from: 0, to: 4 }, { from: 4, to: 8 }, // Diagonal \
+        { from: 2, to: 4 }, { from: 4, to: 6 }  // Diagonal /
+      ];
+
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line';
+        const from = positions[line.from];
+        const to = positions[line.to];
+        const length = Math.hypot(to.x - from.x, to.y - from.y);
+        const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
+        div.style.width = `${length}px`;
+        div.style.left = `${from.x}px`;
+        div.style.top = `${from.y}px`;
+        div.style.transform = `rotate(${angle}deg)`;
+        container.appendChild(div);
+      });
+
+      // Create vertices
+      positions.forEach((pos, index) => {
+        const vertex = document.createElement('div');
+        vertex.className = 'vertex';
+        vertex.style.left = `${pos.x}px`;
+        vertex.style.top = `${pos.y}px`;
+        vertex.dataset.index = index;
+        
+        // Add touch and click events
+        vertex.addEventListener('click', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        });
+        
+        vertex.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        }, { passive: false });
+        
+        container.appendChild(vertex);
+      });
+    }
+
+    function handleClick(index) {
+      if (gameState.gameOver) return;
+
+      if (gameState.phase === 'place') {
+        // Place phase
+        if (!gameState.board[index]) {
+          gameState.board[index] = gameState.currentPlayer;
+          gameState.tokensPlaced[gameState.currentPlayer]++;
+          updateBoard();
+          
+          if (checkWin()) {
+            endGame(`Player ${gameState.currentPlayer} Wins!`);
+            return;
+          }
+          
+          if (gameState.tokensPlaced.A === 3 && gameState.tokensPlaced.B === 3) {
+            gameState.phase = 'move';
+          } else {
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      } else {
+        // Move phase
+        if (selectedVertex === null) {
+          if (gameState.board[index] === gameState.currentPlayer) {
+            selectedVertex = index;
+            highlightVertex(index, true);
+          }
+        } else {
+          if (index === selectedVertex) {
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+          } else if (!gameState.board[index] && adjacencies[selectedVertex].includes(index)) {
+            gameState.board[index] = gameState.currentPlayer;
+            gameState.board[selectedVertex] = null;
+            updateBoard();
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+            
+            if (checkWin()) {
+              endGame(`Player ${gameState.currentPlayer} Wins!`);
+              return;
+            }
+            
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      }
+    }
+
+    function highlightVertex(index, highlight) {
+      const vertices = container.querySelectorAll('.vertex');
+      const vertex = vertices[index];
+      if (highlight) {
+        vertex.classList.add('selected');
+      } else {
+        vertex.classList.remove('selected');
+      }
+    }
+
+    function updateBoard() {
+      const vertices = container.querySelectorAll('.vertex');
+      gameState.board.forEach((player, index) => {
+        const vertex = vertices[index];
+        vertex.textContent = player || '';
+        vertex.className = 'vertex';
+        if (player === 'A') {
+          vertex.classList.add('player-a');
+        } else if (player === 'B') {
+          vertex.classList.add('player-b');
+        }
+      });
+    }
+
+    function updateStatus() {
+      const phase = gameState.phase === 'place' ? 'PLACE' : 'MOVE';
+      const phaseClass = gameState.phase === 'place' ? 'phase-place' : 'phase-move';
+      status.innerHTML = `Player ${gameState.currentPlayer}'s turn <span class="phase-indicator ${phaseClass}">${phase} PHASE</span>`;
+    }
+
+    function checkWin() {
+      for (const line of winLines) {
+        if (gameState.board[line[0]] &&
+            gameState.board[line[0]] === gameState.board[line[1]] &&
+            gameState.board[line[1]] === gameState.board[line[2]]) {
+          
+          // Highlight winning line
+          const vertices = container.querySelectorAll('.vertex');
+          line.forEach(index => {
+            vertices[index].classList.add('win-animation');
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function endGame(message) {
+      gameState.gameOver = true;
+      status.innerHTML = `<span style="color: #ffd43b; font-size: 1.5em;">${message}</span>`;
+    }
+
+    function restartGame() {
+      resetGameState();
+      initializeGame();
+    }
+
+    function resetGameState() {
+      gameState = {
+        board: Array(9).fill(null),
+        currentPlayer: 'A',
+        phase: 'place',
+        tokensPlaced: { A: 0, B: 0 },
+        gameOver: false
+      };
+      selectedVertex = null;
+    }
+
+    // Handle orientation changes and resizing
+    let resizeTimeout;
+    function handleResize() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (document.getElementById('game-screen').classList.contains('active')) {
+          initializeGame();
+        }
+        
+        // Recreate particles with appropriate count
+        const particlesContainer = document.getElementById('particles');
+        particlesContainer.innerHTML = '';
+        createParticles();
+      }, 100);
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    // Prevent zoom on input focus (iOS Safari)
+    document.addEventListener('touchstart', function(e) {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    });
+
+    // Initialize particles on load
+    createParticles();
+
+    // Add loading state handling
+    window.addEventListener('load', () => {
+      document.body.style.opacity = '1';
+    });
+  </script>
+</body>
+</html> -->
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Nine Point Game</title>
+  <meta name="theme-color" content="#667eea">
+  <meta name="description" content="Strategic Nine Point Board Game - PWA Ready">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: 'Orbitron', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      height: 100%;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.8s ease-out;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Home Screen */
+    .home-container {
+      text-align: center;
+      color: white;
+      max-width: 90vw;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .game-title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 900;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #fff, #f0f8ff, #e6e6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      line-height: 1.1;
+    }
+
+    @keyframes titleGlow {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.2); }
+    }
+
+    .game-subtitle {
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      margin-bottom: 10px;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .game-description {
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      opacity: 0.8;
+      max-width: 100%;
+    }
+
+    .player-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .input-label {
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .player-input {
+      padding: 12px 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      outline: none;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    .player-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .player-input:focus {
+      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      padding: clamp(12px, 4vw, 15px) clamp(30px, 8vw, 40px);
+      border-radius: 50px;
+      color: white;
+      font-size: clamp(1rem, 4vw, 1.1rem);
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      touch-action: manipulation;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before,
+    .btn:active::before {
+      left: 100%;
+    }
+
+    .btn:hover,
+    .btn:active {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #555, #777);
+    }
+
+    .btn-secondary:hover,
+    .btn-secondary:active {
+      background: linear-gradient(45deg, #666, #888);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Game Screen */
+    .game-screen {
+      flex-direction: column;
+      gap: clamp(15px, 4vw, 30px);
+      max-width: 100vw;
+    }
+
+    .game-header {
+      text-align: center;
+      color: white;
+      padding: 0 10px;
+    }
+
+    .game-header h2 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 10px;
+    }
+
+    .game-board-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: clamp(15px, 4vw, 30px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 350px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .vertex {
+      position: absolute;
+      width: clamp(45px, 12vw, 60px);
+      height: clamp(45px, 12vw, 60px);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .vertex:hover,
+    .vertex:active {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .vertex.player-a {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .vertex.player-b {
+      background: linear-gradient(135deg, #4dabf7, #339af0);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(77, 171, 247, 0.4);
+    }
+
+    .vertex.selected {
+      border: 3px solid #ffd43b !important;
+      box-shadow: 0 0 25px rgba(255, 212, 59, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .line {
+      position: absolute;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+      transform-origin: 0 0;
+      z-index: 1;
+      height: clamp(2px, 0.5vw, 3px);
+    }
+
+    .game-status {
+      text-align: center;
+      color: white;
+      margin-top: 20px;
+      padding: 0 10px;
+      width: 100%;
+    }
+
+    #status {
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1.3;
+    }
+
+    .game-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .win-animation {
+      animation: winGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes winGlow {
+      from {
+        box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+      to {
+        box-shadow: 0 0 25px #ffd700, 0 0 50px #ffd700;
+        transform: translate(-50%, -50%) scale(1.25);
+      }
+    }
+
+    .phase-indicator {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
+      font-weight: 600;
+      margin: 5px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .phase-place {
+      background: linear-gradient(45deg, #51cf66, #37b24d);
+      color: white;
+    }
+
+    .phase-move {
+      background: linear-gradient(45deg, #ff8787, #ff6b6b);
+      color: white;
+    }
+
+    /* Particle effects */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: clamp(3px, 1vw, 4px);
+      height: clamp(3px, 1vw, 4px);
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50%;
+      animation: float 6s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Hide controls during game */
+    .game-controls.hidden {
+      display: none;
+    }
+
+    /* Mobile specific adjustments */
+    @media (max-width: 480px) {
+      .home-container {
+        padding: 15px;
+      }
+      
+      .game-board-container {
+        margin: 0 10px;
+        padding: 15px;
+      }
+      
+      .vertex {
+        width: 40px;
+        height: 40px;
+        font-size: 0.6rem;
+      }
+      
+      .phase-indicator {
+        display: block;
+        margin-top: 10px;
+      }
+    }
+
+    /* Landscape mobile adjustments */
+    @media (max-height: 600px) and (orientation: landscape) {
+      .screen {
+        padding: 10px;
+      }
+      
+      .game-screen {
+        gap: 15px;
+      }
+      
+      .game-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+      }
+      
+      .game-board-container {
+        padding: 15px;
+      }
+      
+      #status {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+      }
+    }
+
+    /* Extra small devices */
+    @media (max-width: 320px) {
+      .game-title {
+        font-size: 2rem;
+      }
+      
+      .vertex {
+        width: 35px;
+        height: 35px;
+        font-size: 0.5rem;
+      }
+      
+      .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* High DPI displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .vertex {
+        border-width: 1px;
+      }
+      
+      .line {
+        height: 2px;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body::before {
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.4) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.3) 0%, transparent 50%);
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .vertex {
+        transition: none;
+      }
+      
+      .btn {
+        transition: none;
+      }
+      
+      .pulse,
+      .titleGlow,
+      .winGlow,
+      .float {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="particles" id="particles"></div>
+
+  
+  <div class="screen active" id="home-screen">
+    <div class="home-container">
+      <h1 class="game-title">NINE POINT</h1>
+      <p class="game-subtitle">Strategic Board Game</p>
+      <p class="game-description">
+        A classic strategy game where two players compete to align three pieces in a row. 
+        Place your pieces strategically, then move them wisely to achieve victory!
+      </p>
+      
+      <div class="player-inputs">
+        <div class="input-group">
+          <label class="input-label" for="player-a-name">Player A Name:</label>
+          <input 
+            type="text" 
+            id="player-a-name" 
+            class="player-input" 
+            placeholder="Enter Player A name"
+            maxlength="8"
+          >
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="player-b-name">Player B Name:</label>
+          <input 
+            type="text" 
+            id="player-b-name" 
+            class="player-input" 
+            placeholder="Enter Player B name"
+            maxlength="8"
+          >
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn" onclick="startGame()">START GAME</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="game-screen">
+    <div class="game-header">
+      <h2>NINE POINT GAME</h2>
+    </div>
+    
+    <div class="game-board-container">
+      <div id="game-container"></div>
+    </div>
+    
+    <div class="game-status">
+      <div id="status">Player A's turn</div>
+      <div class="game-controls hidden" id="game-controls">
+        <button class="btn" id="restart" onclick="restartGame()">RESTART</button>
+        <button class="btn btn-secondary" onclick="goHome()">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create floating particles with responsive count
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 10 : 15; // Fewer particles on mobile
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 6 + 's';
+        particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Player names
+    let playerNames = { A: 'A', B: 'B' };
+
+    // Navigation functions
+    function startGame() {
+      // Get player names from inputs
+      const playerAInput = document.getElementById('player-a-name').value.trim();
+      const playerBInput = document.getElementById('player-b-name').value.trim();
+      
+      playerNames.A = playerAInput || 'A';
+      playerNames.B = playerBInput || 'B';
+      
+      document.getElementById('home-screen').classList.remove('active');
+      document.getElementById('game-screen').classList.add('active');
+      initializeGame();
+    }
+
+    function goHome() {
+      document.getElementById('game-screen').classList.remove('active');
+      document.getElementById('home-screen').classList.add('active');
+      resetGameState();
+      // Hide controls when going home
+      document.getElementById('game-controls').classList.add('hidden');
+    }
+
+    // Game state
+    let gameState = {
+      board: Array(9).fill(null),
+      currentPlayer: 'A',
+      phase: 'place',
+      tokensPlaced: { A: 0, B: 0 },
+      gameOver: false
+    };
+
+    // Responsive vertex positions (percentage-based)
+    function getPositions() {
+      const container = document.getElementById('game-container');
+      const rect = container.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height);
+      const margin = size * 0.15; // 15% margin
+      const step = (size - 2 * margin) / 2;
+      
+      return [
+        { x: margin, y: margin },                    // P1
+        { x: margin + step, y: margin },             // P2
+        { x: margin + 2 * step, y: margin },        // P3
+        { x: margin, y: margin + step },             // P4
+        { x: margin + step, y: margin + step },      // P5
+        { x: margin + 2 * step, y: margin + step }, // P6
+        { x: margin, y: margin + 2 * step },        // P7
+        { x: margin + step, y: margin + 2 * step }, // P8
+        { x: margin + 2 * step, y: margin + 2 * step } // P9
+      ];
+    }
+
+    // Adjacency list for valid moves
+    const adjacencies = [
+      [1, 3, 4],        // P1: P2, P4, P5
+      [0, 2, 4],        // P2: P1, P3, P5
+      [1, 4, 5],        // P3: P2, P5, P6
+      [0, 4, 6],        // P4: P1, P5, P7
+      [0, 1, 2, 3, 5, 6, 7, 8], // P5: All except itself
+      [2, 4, 8],        // P6: P3, P5, P9
+      [3, 4, 7],        // P7: P4, P5, P8
+      [4, 6, 8],        // P8: P5, P7, P9
+      [4, 5, 7]         // P9: P5, P6, P8
+    ];
+
+    // Win conditions
+    const winLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
+      [0, 4, 8], [2, 4, 6]             // Diagonal
+    ];
+
+    let selectedVertex = null;
+    const container = document.getElementById('game-container');
+    const status = document.getElementById('status');
+
+    function initializeGame() {
+      container.innerHTML = '';
+      createBoard();
+      updateStatus();
+      // Hide controls at start of game
+      document.getElementById('game-controls').classList.add('hidden');
+    }
+
+    function createBoard() {
+      const positions = getPositions();
+      
+      // Draw lines
+      const lines = [
+        { from: 0, to: 1 }, { from: 1, to: 2 }, // Horizontal top
+        { from: 3, to: 4 }, { from: 4, to: 5 }, // Horizontal middle
+        { from: 6, to: 7 }, { from: 7, to: 8 }, // Horizontal bottom
+        { from: 0, to: 3 }, { from: 3, to: 6 }, // Vertical left
+        { from: 1, to: 4 }, { from: 4, to: 7 }, // Vertical middle
+        { from: 2, to: 5 }, { from: 5, to: 8 }, // Vertical right
+        { from: 0, to: 4 }, { from: 4, to: 8 }, // Diagonal \
+        { from: 2, to: 4 }, { from: 4, to: 6 }  // Diagonal /
+      ];
+
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line';
+        const from = positions[line.from];
+        const to = positions[line.to];
+        const length = Math.hypot(to.x - from.x, to.y - from.y);
+        const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
+        div.style.width = `${length}px`;
+        div.style.left = `${from.x}px`;
+        div.style.top = `${from.y}px`;
+        div.style.transform = `rotate(${angle}deg)`;
+        container.appendChild(div);
+      });
+
+      // Create vertices
+      positions.forEach((pos, index) => {
+        const vertex = document.createElement('div');
+        vertex.className = 'vertex';
+        vertex.style.left = `${pos.x}px`;
+        vertex.style.top = `${pos.y}px`;
+        vertex.dataset.index = index;
+        
+        // Add touch and click events
+        vertex.addEventListener('click', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        });
+        
+        vertex.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        }, { passive: false });
+        
+        container.appendChild(vertex);
+      });
+    }
+
+    function handleClick(index) {
+      if (gameState.gameOver) return;
+
+      if (gameState.phase === 'place') {
+        // Place phase
+        if (!gameState.board[index]) {
+          gameState.board[index] = gameState.currentPlayer;
+          gameState.tokensPlaced[gameState.currentPlayer]++;
+          updateBoard();
+          
+          if (checkWin()) {
+            endGame(`${playerNames[gameState.currentPlayer]} Wins!`);
+            return;
+          }
+          
+          if (gameState.tokensPlaced.A === 3 && gameState.tokensPlaced.B === 3) {
+            gameState.phase = 'move';
+          } else {
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      } else {
+        // Move phase
+        if (selectedVertex === null) {
+          if (gameState.board[index] === gameState.currentPlayer) {
+            selectedVertex = index;
+            highlightVertex(index, true);
+          }
+        } else {
+          if (index === selectedVertex) {
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+          } else if (!gameState.board[index] && adjacencies[selectedVertex].includes(index)) {
+            gameState.board[index] = gameState.currentPlayer;
+            gameState.board[selectedVertex] = null;
+            updateBoard();
+            highlightVertex(selectedVertex, false);
+            selectedVertex = null;
+            
+            if (checkWin()) {
+              endGame(`${playerNames[gameState.currentPlayer]} Wins!`);
+              return;
+            }
+            
+            gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+          }
+          updateStatus();
+        }
+      }
+    }
+
+    function highlightVertex(index, highlight) {
+      const vertices = container.querySelectorAll('.vertex');
+      const vertex = vertices[index];
+      if (highlight) {
+        vertex.classList.add('selected');
+      } else {
+        vertex.classList.remove('selected');
+      }
+    }
+
+    function updateBoard() {
+      const vertices = container.querySelectorAll('.vertex');
+      gameState.board.forEach((player, index) => {
+        const vertex = vertices[index];
+        vertex.textContent = player ? playerNames[player] : '';
+        vertex.className = 'vertex';
+        if (player === 'A') {
+          vertex.classList.add('player-a');
+        } else if (player === 'B') {
+          vertex.classList.add('player-b');
+        }
+      });
+    }
+
+    function updateStatus() {
+      const phase = gameState.phase === 'place' ? 'PLACE' : 'MOVE';
+      const phaseClass = gameState.phase === 'place' ? 'phase-place' : 'phase-move';
+      const currentPlayerName = playerNames[gameState.currentPlayer];
+      status.innerHTML = `${currentPlayerName}'s turn <span class="phase-indicator ${phaseClass}">${phase} PHASE</span>`;
+    }
+
+    function checkWin() {
+      for (const line of winLines) {
+        if (gameState.board[line[0]] &&
+            gameState.board[line[0]] === gameState.board[line[1]] &&
+            gameState.board[line[1]] === gameState.board[line[2]]) {
+          
+          // Highlight winning line
+          const vertices = container.querySelectorAll('.vertex');
+          line.forEach(index => {
+            vertices[index].classList.add('win-animation');
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function endGame(message) {
+      gameState.gameOver = true;
+      status.innerHTML = `<span style="color: #ffd43b; font-size: 1.5em;">${message}</span>`;
+      // Show controls after game ends
+      document.getElementById('game-controls').classList.remove('hidden');
+    }
+
+    function restartGame() {
+      resetGameState();
+      initializeGame();
+    }
+
+    function resetGameState() {
+      gameState = {
+        board: Array(9).fill(null),
+        currentPlayer: 'A',
+        phase: 'place',
+        tokensPlaced: { A: 0, B: 0 },
+        gameOver: false
+      };
+      selectedVertex = null;
+    }
+
+    // Handle orientation changes and resizing
+    let resizeTimeout;
+    function handleResize() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (document.getElementById('game-screen').classList.contains('active')) {
+          initializeGame();
+        }
+        
+        // Recreate particles with appropriate count
+        const particlesContainer = document.getElementById('particles');
+        particlesContainer.innerHTML = '';
+        createParticles();
+      }, 100);
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    // Prevent zoom on input focus (iOS Safari)
+    document.addEventListener('touchstart', function(e) {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    });
+
+    // Initialize particles on load
+    createParticles();
+
+    // Add loading state handling
+    window.addEventListener('load', () => {
+      document.body.style.opacity = '1';
+    });
+  </script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nine Point Game</title>
+  <meta name="theme-color" content="#667eea">
+  <meta name="description" content="Strategic Nine Point Board Game - PWA Ready">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/public/icons/icon-192x192.png">
+  <link rel="icon" type="image/png" href="/public/icons/icon-192x192.png">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      font-family: 'Orbitron', monospace;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      height: 100%;
+      overflow-x: hidden;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+      z-index: -1;
+    }
+
+    .screen {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      align-items: center;
+      flex-direction: column;
+      justify-content: center;
+      animation: fadeIn 0.8s ease-out;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Home Screen */
+    .home-container {
+      text-align: center;
+      color: white;
+      max-width: 90vw;
+      width: 100%;
+      max-width: 500px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .game-title {
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      font-weight: 900;
+      margin-bottom: 15px;
+      background: linear-gradient(45deg, #fff, #f0f8ff, #e6e6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+      animation: titleGlow 3s ease-in-out infinite alternate;
+      line-height: 1.1;
+    }
+
+    @keyframes titleGlow {
+      0% { filter: brightness(1); }
+      100% { filter: brightness(1.2); }
+    }
+
+    .game-subtitle {
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      margin-bottom: 10px;
+      opacity: 0.9;
+      font-weight: 400;
+    }
+
+    .game-description {
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      opacity: 0.8;
+      max-width: 100%;
+    }
+
+    .player-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .input-label {
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .player-input {
+      padding: 12px 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      color: white;
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(0.9rem, 3.5vw, 1rem);
+      font-weight: 600;
+      text-align: center;
+      transition: all 0.3s ease;
+      outline: none;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+
+    .player-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .player-input:focus {
+      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border: none;
+      padding: clamp(12px, 4vw, 15px) clamp(30px, 8vw, 40px);
+      border-radius: 50px;
+      color: white;
+      font-size: clamp(1rem, 4vw, 1.1rem);
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 5px;
+      touch-action: manipulation;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before,
+    .btn:active::before {
+      left: 100%;
+    }
+
+    .btn:hover,
+    .btn:active {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+      filter: brightness(1.1);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #555, #777);
+    }
+
+    .btn-secondary:hover,
+    .btn-secondary:active {
+      background: linear-gradient(45deg, #666, #888);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Game Screen */
+    .game-screen {
+      flex-direction: column;
+      gap: clamp(20px, 5vw, 40px);
+      max-width: 100vw;
+      align-items: center;
+    }
+
+    .game-header {
+      text-align: center;
+      color: white;
+      padding: 0 10px;
+      margin-bottom: 20px;
+    }
+
+    .game-header h2 {
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      margin-bottom: 10px;
+    }
+
+    .game-board-container {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: clamp(15px, 4vw, 30px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 350px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .vertex {
+      position: absolute;
+      width: clamp(45px, 12vw, 60px);
+      height: clamp(45px, 12vw, 60px);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(5px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .vertex:hover,
+    .vertex:active {
+      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .vertex.player-a {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    .vertex.player-b {
+      background: linear-gradient(135deg, #4dabf7, #339af0);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(77, 171, 247, 0.4);
+    }
+
+    .vertex.selected {
+      border: 3px solid #ffd43b !important;
+      box-shadow: 0 0 25px rgba(255, 212, 59, 0.6);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+      50% { transform: translate(-50%, -50%) scale(1.2); }
+    }
+
+    .line {
+      position: absolute;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+      transform-origin: 0 0;
+      z-index: 1;
+      height: clamp(2px, 0.5vw, 3px);
+    }
+
+    .game-status {
+      text-align: center;
+      color: white;
+      padding: 0 10px;
+      width: 100%;
+      margin-top: 30px;
+      max-width: 400px;
+    }
+
+    #status {
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      line-height: 1.3;
+    }
+
+    .game-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .win-animation {
+      animation: winGlow 1s ease-in-out infinite alternate;
+    }
+
+    @keyframes winGlow {
+      from {
+        box-shadow: 0 0 15px #ffd700, 0 0 30px #ffd700;
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+      to {
+        box-shadow: 0 0 25px #ffd700, 0 0 50px #ffd700;
+        transform: translate(-50%, -50%) scale(1.25);
+      }
+    }
+
+    .phase-indicator {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: clamp(0.8rem, 3vw, 0.9rem);
+      font-weight: 600;
+      margin: 5px;
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    .phase-place {
+      background: linear-gradient(45deg, #51cf66, #37b24d);
+      color: white;
+    }
+
+    .phase-move {
+      background: linear-gradient(45deg, #ff8787, #ff6b6b);
+      color: white;
+    }
+
+    /* Enhanced Particle effects */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      width: clamp(2px, 0.8vw, 3px);
+      height: clamp(2px, 0.8vw, 3px);
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: float 8s infinite linear;
+      opacity: 0;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      90% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-10vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Hide controls during game */
+    .game-controls.hidden {
+      display: none;
+    }
+
+    /* Mobile specific adjustments */
+    @media (max-width: 480px) {
+      .home-container {
+        padding: 15px;
+      }
+      
+      .game-board-container {
+        margin: 0 10px;
+        padding: 15px;
+      }
+      
+      .vertex {
+        width: 40px;
+        height: 40px;
+        font-size: 0.6rem;
+      }
+      
+      .phase-indicator {
+        display: block;
+        margin-top: 10px;
+      }
+    }
+
+    /* Landscape mobile adjustments */
+    @media (max-height: 600px) and (orientation: landscape) {
+      .screen {
+        padding: 10px;
+      }
+      
+      .game-screen {
+        gap: 15px;
+      }
+      
+      .game-header h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+      }
+      
+      .game-board-container {
+        padding: 15px;
+      }
+      
+      #status {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+      }
+    }
+
+    /* Extra small devices */
+    @media (max-width: 320px) {
+      .game-title {
+        font-size: 2rem;
+      }
+      
+      .vertex {
+        width: 35px;
+        height: 35px;
+        font-size: 0.5rem;
+      }
+      
+      .btn {
+        padding: 10px 25px;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* High DPI displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+      .vertex {
+        border-width: 1px;
+      }
+      
+      .line {
+        height: 2px;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body::before {
+        background: 
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.4) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.3) 0%, transparent 50%);
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .vertex {
+        transition: none;
+      }
+      
+      .btn {
+        transition: none;
+      }
+      
+      .pulse,
+      .titleGlow,
+      .winGlow,
+      .float {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Home Screen -->
+  <div class="screen active" id="home-screen">
+    <div class="home-container">
+      <h1 class="game-title">NINE POINT</h1>
+      <p class="game-subtitle">Strategic Board Game</p>
+      <p class="game-description">
+        A classic strategy game where two players compete to align three pieces in a row. 
+        Place your pieces strategically, then move them wisely to achieve victory!
+      </p>
+      
+      <div class="player-inputs">
+        <div class="input-group">
+          <label class="input-label" for="player-a-name">Player A Name:</label>
+          <input 
+            type="text" 
+            id="player-a-name" 
+            class="player-input" 
+            placeholder="Tikku..."
+            maxlength="8"
+          >
+        </div>
+        <div class="input-group">
+          <label class="input-label" for="player-b-name">Player B Name:</label>
+          <input 
+            type="text" 
+            id="player-b-name" 
+            class="player-input" 
+            placeholder="Dimple..."
+            maxlength="8"
+          >
+        </div>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn" onclick="startGame()">START GAME</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div class="screen" id="game-screen">
+    <div class="game-header">
+      <h2>NINE POINT GAME</h2>
+    </div>
+    
+    <div class="game-board-container">
+      <div id="game-container"></div>
+    </div>
+    
+    <div class="game-status">
+      <div id="status">Player A's turn</div>
+      <div class="game-controls hidden" id="game-controls">
+        <button class="btn" id="restart" onclick="restartGame()">RESTART</button>
+        <button class="btn btn-secondary" onclick="goHome()">MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Create floating particles with responsive count
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 15 : 25; // Increased for subtle effect
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDelay = Math.random() * 8 + 's';
+        particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // Player names
+    let playerNames = { A: 'A', B: 'B' };
+
+    // Navigation functions
+    function startGame() {
+      const playerAInput = document.getElementById('player-a-name').value.trim();
+      const playerBInput = document.getElementById('player-b-name').value.trim();
+      
+      playerNames.A = playerAInput || 'A';
+      playerNames.B = playerBInput || 'B';
+      
+      document.getElementById('home-screen').classList.remove('active');
+      document.getElementById('game-screen').classList.add('active');
+      initializeGame();
+    }
+
+    function goHome() {
+      document.getElementById('game-screen').classList.remove('active');
+      document.getElementById('home-screen').classList.add('active');
+      resetGameState();
+      document.getElementById('game-controls').classList.add('hidden');
+    }
+
+    // Game state
+    let gameState = {
+      board: Array(9).fill(null),
+      currentPlayer: 'A',
+      phase: 'place',
+      tokensPlaced: { A: 0, B: 0 },
+      gameOver: false
+    };
+
+    function getPositions() {
+      const container = document.getElementById('game-container');
+      const rect = container.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height);
+      const margin = size * 0.15;
+      const step = (size - 2 * margin) / 2;
+      
+      return [
+        { x: margin, y: margin },
+        { x: margin + step, y: margin },
+        { x: margin + 2 * step, y: margin },
+        { x: margin, y: margin + step },
+        { x: margin + step, y: margin + step },
+        { x: margin + 2 * step, y: margin + step },
+        { x: margin, y: margin + 2 * step },
+        { x: margin + step, y: margin + 2 * step },
+        { x: margin + 2 * step, y: margin + 2 * step }
+      ];
+    }
+
+    const adjacencies = [
+      [1, 3, 4], [0, 2, 4], [1, 4, 5],
+      [0, 4, 6], [0, 1, 2, 3, 5, 6, 7, 8], [2, 4, 8],
+      [3, 4, 7], [4, 6, 8], [4, 5, 7]
+    ];
+
+    const winLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    let selectedVertex = null;
+    const container = document.getElementById('game-container');
+    const status = document.getElementById('status');
+
+    function initializeGame() {
+      container.innerHTML = '';
+      createBoard();
+      updateStatus();
+      document.getElementById('game-controls').classList.add('hidden');
+    }
+
+    function createBoard() {
+      const positions = getPositions();
+      
+      const lines = [
+        { from: 0, to: 1 }, { from: 1, to: 2 },
+        { from: 3, to: 4 }, { from: 4, to: 5 },
+        { from: 6, to: 7 }, { from: 7, to: 8 },
+        { from: 0, to: 3 }, { from: 3, to: 6 },
+        { from: 1, to: 4 }, { from: 4, to: 7 },
+        { from: 2, to: 5 }, { from: 5, to: 8 },
+        { from: 0, to: 4 }, { from: 4, to: 8 },
+        { from: 2, to: 4 }, { from: 4, to: 6 }
+      ];
+
+      lines.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'line';
+        const from = positions[line.from];
+        const to = positions[line.to];
+        const length = Math.hypot(to.x - from.x, to.y - from.y);
+        const angle = Math.atan2(to.y - from.y, to.x - from.x) * 180 / Math.PI;
+        div.style.width = `${length}px`;
+        div.style.left = `${from.x}px`;
+        div.style.top = `${from.y}px`;
+        div.style.transform = `rotate(${angle}deg)`;
+        container.appendChild(div);
+      });
+
+      positions.forEach((pos, index) => {
+        const vertex = document.createElement('div');
+        vertex.className = 'vertex';
+        vertex.style.left = `${pos.x}px`;
+        vertex.style.top = `${pos.y}px`;
+        vertex.dataset.index = index;
+        
+        vertex.addEventListener('click', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        });
+        
+        vertex.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          handleClick(index);
+        }, { passive: false });
+        
+        container.appendChild(vertex);
+      });
+    }
+
+    // Sound objects
+const clickSound = new Audio('public/sounds/click.mp3');
+const winSound = new Audio('public/sounds/win.mp3');
+
+function handleClick(index) {
+  if (gameState.gameOver) return;
+
+  // Play click sound on any valid interaction
+  clickSound.play().catch(error => console.error('Click sound failed:', error));
+
+  if (gameState.phase === 'place') {
+    if (!gameState.board[index]) {
+      gameState.board[index] = gameState.currentPlayer;
+      gameState.tokensPlaced[gameState.currentPlayer]++;
+      updateBoard();
+      
+      if (checkWin()) {
+        endGame(`${playerNames[gameState.currentPlayer]} Wins!`);
+        return;
+      }
+      
+      if (gameState.tokensPlaced.A === 3 && gameState.tokensPlaced.B === 3) {
+        gameState.phase = 'move';
+        gameState.currentPlayer = 'A';
+      } else {
+        gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+      }
+      updateStatus();
+    }
+  } else {
+    if (selectedVertex === null) {
+      if (gameState.board[index] === gameState.currentPlayer) {
+        selectedVertex = index;
+        highlightVertex(index, true);
+      }
+    } else {
+      if (index === selectedVertex) {
+        highlightVertex(selectedVertex, false);
+        selectedVertex = null;
+      } else if (!gameState.board[index] && adjacencies[selectedVertex].includes(index)) {
+        gameState.board[index] = gameState.currentPlayer;
+        gameState.board[selectedVertex] = null;
+        updateBoard();
+        highlightVertex(selectedVertex, false);
+        selectedVertex = null;
+        
+        if (checkWin()) {
+          endGame(`${playerNames[gameState.currentPlayer]} Wins!`);
+          return;
+        }
+        
+        gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+      }
+      updateStatus();
+    }
+  }
+}
+    function highlightVertex(index, highlight) {
+      const vertices = container.querySelectorAll('.vertex');
+      const vertex = vertices[index];
+      if (highlight) {
+        vertex.classList.add('selected');
+      } else {
+        vertex.classList.remove('selected');
+      }
+    }
+
+    function updateBoard() {
+      const vertices = container.querySelectorAll('.vertex');
+      gameState.board.forEach((player, index) => {
+        const vertex = vertices[index];
+        vertex.textContent = player ? playerNames[player] : '';
+        vertex.className = 'vertex';
+        if (player === 'A') {
+          vertex.classList.add('player-a');
+        } else if (player === 'B') {
+          vertex.classList.add('player-b');
+        }
+      });
+    }
+
+    function updateStatus() {
+      const phase = gameState.phase === 'place' ? 'PLACE' : 'MOVE';
+      const phaseClass = gameState.phase === 'place' ? 'phase-place' : 'phase-move';
+      const currentPlayerName = playerNames[gameState.currentPlayer];
+      status.innerHTML = `${currentPlayerName}'s turn <span class="phase-indicator ${phaseClass}">${phase} PHASE</span>`;
+    }
+
+    function checkWin() {
+      for (const line of winLines) {
+        if (gameState.board[line[0]] &&
+            gameState.board[line[0]] === gameState.board[line[1]] &&
+            gameState.board[line[1]] === gameState.board[line[2]]) {
+          const vertices = container.querySelectorAll('.vertex');
+          line.forEach(index => {
+            vertices[index].classList.add('win-animation');
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+
+    function endGame(message) {
+  gameState.gameOver = true;
+  status.innerHTML = `<span style="color: #ffd43b; font-size: 1.5em;">${message}</span>`;
+  // Play win sound
+  winSound.play().catch(error => console.error('Win sound failed:', error));
+  document.getElementById('game-controls').classList.remove('hidden');
+}
+
+    function restartGame() {
+      resetGameState();
+      initializeGame();
+    }
+
+    function resetGameState() {
+      gameState = {
+        board: Array(9).fill(null),
+        currentPlayer: 'A',
+        phase: 'place',
+        tokensPlaced: { A: 0, B: 0 },
+        gameOver: false
+      };
+      selectedVertex = null;
+    }
+
+    let resizeTimeout;
+    function handleResize() {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        if (document.getElementById('game-screen').classList.contains('active')) {
+          initializeGame();
+        }
+        
+        const particlesContainer = document.getElementById('particles');
+        particlesContainer.innerHTML = '';
+        createParticles();
+      }, 100);
+    }
+
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    document.addEventListener('touchstart', function(e) {
+      if (e.touches.length > 1) {
+        e.preventDefault();
+      }
+    });
+
+    createParticles();
+
+    window.addEventListener('load', () => {
+      document.body.style.opacity = '1';
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(registration => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        }).catch(error => {
+          console.error('Service Worker registration failed:', error);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
