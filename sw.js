@@ -3,11 +3,12 @@ const CACHE_NAME = 'nine-point-game-v1';
 
 // Files to cache
 const FILES_TO_CACHE = [
-  '/index.html',
-  '/public/sounds/click.mp3',
-  '/public/sounds/win.mp3',
-  '/public/icons/icon-192x192.png',
-  '/public/icons/icon-512x512.png'
+  '/char-parr/',
+  '/char-parr/index.html',
+  '/char-parr/public/sounds/click.mp3',
+  '/char-parr/public/sounds/win.mp3',
+  '/char-parr/public/icons/icon-192x192.png',
+  '/char-parr/public/icons/icon-512x512.png'
 ];
 
 // Install service worker and cache assets
